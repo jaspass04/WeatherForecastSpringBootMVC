@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 public class WeatherForecastController {
     private WeatherForecastService weatherForecastService;
      @GetMapping
-    public String weatherForecast(Model model, HttpServletRequest request) {
+    public String weatherForecast(Model model, HttpSession session) {
          Object user = session.getAttribute("userObj2024");
 
      }
