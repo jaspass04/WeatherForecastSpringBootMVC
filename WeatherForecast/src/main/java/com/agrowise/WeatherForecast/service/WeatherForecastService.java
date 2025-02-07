@@ -98,10 +98,4 @@ public class WeatherForecastService {
         return forecasts;
     }
 
-    public static void main(String[] args) {
-        List<WeatherForecast> forecasts = getWeatherForecast("Kalamata");
-        for (WeatherForecast forecast : forecasts) {
-            System.out.println(forecast);
-        }
-    }
 }
