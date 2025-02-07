@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.agrowise.WeatherForecast.model.WeatherForecast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,38 +19,6 @@ public class WeatherForecastService {
 
     private static final Logger logger = Logger.getLogger(WeatherForecastService.class.getName());
 
-    // Nested WeatherForecast class
-    public static class WeatherForecast {
-        private double temperature;
-        private int humidity;
-        private String description;
-        private boolean isRaining;
-
-        public WeatherForecast(double temperature, int humidity, String description, boolean isRaining) {
-            this.temperature = temperature;
-            this.humidity = humidity;
-            this.description = description;
-            this.isRaining = isRaining;
-        }
-        public double getTemperature() {
-            return temperature;
-        }
-        public int getHumidity() {
-            return humidity;
-        }
-        public String getDescription() {
-            return description;
-        }
-        public boolean isRaining() {
-            return isRaining;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Temperature: %.1f°C, Humidity: %d%%, Description: %s, Raining: %b",
-                    temperature, humidity, description, isRaining);
-        }
-    }
 
     // Constants for API and city IDs
     private static final int KALAMATA_ID = 261604;
