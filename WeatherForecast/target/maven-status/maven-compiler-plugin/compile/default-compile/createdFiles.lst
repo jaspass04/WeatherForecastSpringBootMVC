@@ -1,7 +1,4 @@
-com\agrowise\WeatherForecast\model\User.class
 com\agrowise\WeatherForecast\service\WeatherForecastService.class
 com\agrowise\WeatherForecast\controller\WeatherForecastController.class
 com\agrowise\WeatherForecast\model\WeatherForecast.class
 com\agrowise\WeatherForecast\WeatherForecastApplication.class
-com\agrowise\WeatherForecast\controller\LoginController.class
-com\agrowise\WeatherForecast\repository\UsersDAO.class
