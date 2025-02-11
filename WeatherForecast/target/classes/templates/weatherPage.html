@@ -112,7 +112,9 @@
         <div th:if="${forecastList}" class="forecast">
             <h2>Weather Forecast for <span th:text="${location}"></span></h2>
             <ul>
-                <li th:each="forecast : ${forecastList}">
+                <li th:each="forecast, status : ${forecastList}">
+                    <!-- Counter will start from 1 instead of 0 -->
+                    <span th:text="'Forecast No.' + ${status.index + 1}"></span><br>
                     <span th:text="'Temperature: ' + ${forecast.temperature} + '°C'"></span><br>
                     <span th:text="'Humidity: ' + ${forecast.humidity} + '% humidity'"></span><br>
                     <span th:text="'Description: ' + ${forecast.description}"></span><br>
@@ -120,6 +122,7 @@
                 </li>
             </ul>
         </div>
+
 
         <div th:if="${error}" class="error">
             <p th:text="${error}"></p>

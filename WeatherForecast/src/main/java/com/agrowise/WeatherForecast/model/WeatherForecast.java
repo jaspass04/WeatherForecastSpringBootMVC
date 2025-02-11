@@ -1,5 +1,7 @@
 package com.agrowise.WeatherForecast.model;
 
+import java.time.LocalDate;
+
 public class WeatherForecast {
 
     private double temperature;
@@ -18,6 +20,7 @@ public class WeatherForecast {
     public double getTemperature() {
         return temperature;
     }
+
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
