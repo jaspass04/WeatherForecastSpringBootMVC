@@ -1,6 +1,5 @@
 package com.agrowise.WeatherForecast.model;
 
-import java.time.LocalDate;
 
 public class WeatherForecast {
 
