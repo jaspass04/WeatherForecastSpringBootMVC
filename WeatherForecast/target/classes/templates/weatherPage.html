@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <style>
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        select, button {
+            font-size: 1em;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .forecast {
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 2px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .forecast h2 {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .forecast ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .forecast li {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Weather Forecast</h1>
+
+        <!-- Form to select city -->
+        <div class="form-container">
+            <form method="POST" action="/agro/weather">
+                <label for="location">Select a city:</label>
+                <select id="location" name="location">
+                    <th:block th:each="city : ${cities}">
+                        <option th:value="${city}" th:text="${city}"
+                                th:selected="${city == selectedCity}"></option>
+                    </th:block>
+                </select>
+                <button type="submit">Get Weather</button>
+            </form>
+        </div>
+
+        <!-- If forecast is available, display it -->
+        <div th:if="${forecastList}" class="forecast">
+            <h2>Weather Forecast for <span th:text="${location}"></span></h2>
+            <ul>
+                <li th:each="forecast : ${forecastList}">
+                    <span th:text="'Temperature: ' + ${forecast.temperature} + '°C'"></span><br>
+                    <span th:text="'Humidity: ' + ${forecast.humidity} + '% humidity'"></span><br>
+                    <span th:text="'Description: ' + ${forecast.description}"></span><br>
+                    <span th:text="'Is it raining? ' + ${forecast.isRaining ? 'Yes' : 'No'}"></span><br>
+                </li>
+            </ul>
+        </div>
+
+        <div th:if="${error}" class="error">
+            <p th:text="${error}"></p>
+        </div>
+    </div>
+
+    </body>
+</html>

@@ -1,74 +1,93 @@
 package com.agrowise.WeatherForecast.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.agrowise.WeatherForecast.model.WeatherForecast;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import com.agrowise.WeatherForecast.config.WebClientConfig;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class WeatherForecastService {
 
-    private static final int KALAMATA_ID = 261604;
-    private static final int PTHIOTIS_ID = 262187;
-    private static final int HERAKLION_ID = 8133920;
-    private static final int CHANIA_ID = 260114;
-    private static final int SPARTI_ID = 253394;
-    private static final double KELVIN_BASE_TEMP = 273.15;
+    private static final Map<String, Integer> CITY_ID_MAP = Map.of(
+            "Kalamata", 261604,
+            "Pthiotis", 262187,
+            "Heraklion", 8133920,
+            "Chania", 260114,
+            "Sparti", 253394
+    );
 
-    @Value("${openweather.api.key}")
+    // API key moved to application.properties
+    @Value("${weather.api.key}")
     private String apiKey;
 
-    private final WebClient webClient;
+    @Value("${weather.api.url}")
+    private String apiUrl;
 
-    public WeatherForecastService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://api.openweathermap.org/data/2.5").build();
+    private final RestTemplate restTemplate;
+
+    public WeatherForecastService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public Mono<Map> getForecast(int cityId) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/forecast")
-                        .queryParam("id", cityId)
-                        .queryParam("appid", apiKey)
-                        .queryParam("units", "metric")
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(this::extractRelevantData);
+    // Method to fetch weather data for a city
+    public List<WeatherForecast> getWeatherData(String city) {
+        int cityId = getCityId(city);
+        String url = buildUrl(cityId);
+
+        String response = restTemplate.getForObject(url, String.class);
+        return parseWeatherData(response);
     }
 
-    public Mono<List<Map<String, Object>>> getForecastsForCities() {
-        List<Integer> cityIds = List.of(KALAMATA_ID, PTHIOTIS_ID, HERAKLION_ID, CHANIA_ID, SPARTI_ID);
-
-        return Mono.zip(cityIds.stream().map(this::getForecast).collect(Collectors.toList()),
-                results -> List.of(results).stream()
-                        .map(o -> (Map<String, Object>) o)
-                        .collect(Collectors.toList()));
+    // Method to validate if the city exists
+    public boolean isCityValid(String city) {
+        return CITY_ID_MAP.containsKey(city);
     }
-    private Map<String, Object> extractRelevantData(Map<String, Object> forecastData) {
-        List<Map<String, Object>> list = (List<Map<String, Object>>) forecastData.get("list");
-        if (list == null || list.isEmpty()) {
-            return Map.of();
+
+    // Simplified this method since it's just returning the keys of CITY_ID_MAP
+    public List<String> getCities() {
+        return List.copyOf(CITY_ID_MAP.keySet());
+    }
+
+    // Extract city id lookup to a method
+    private int getCityId(String city) {
+        return CITY_ID_MAP.getOrDefault(city, -1);
+    }
+
+    // Build the API URL dynamically using UriComponentsBuilder
+    private String buildUrl(int cityId) {
+        return UriComponentsBuilder.fromHttpUrl(apiUrl)
+                .queryParam("id", cityId)
+                .queryParam("appid", apiKey)
+                .queryParam("units", "metric")  // Celsius
+                .queryParam("cnt", "5")  // Get 5 days forecast
+                .toUriString();
+    }
+
+    // Parse the weather data from the response
+    private List<WeatherForecast> parseWeatherData(String response) {
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONArray forecastList = jsonResponse.getJSONArray("list");
+
+        List<WeatherForecast> forecasts = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            JSONObject dayForecast = forecastList.getJSONObject(i);
+            double dayTemp = dayForecast.getJSONObject("main").getDouble("temp");
+            int humidity = dayForecast.getJSONObject("main").getInt("humidity");
+            JSONArray weatherArray = dayForecast.getJSONArray("weather");
+            String description = weatherArray.getJSONObject(0).getString("description");
+            boolean isRaining = description.contains("rain");
+
+            forecasts.add(new WeatherForecast(dayTemp, humidity, description, isRaining));
         }
 
-        Map<String, Object> firstEntry = list.get(0);
-        Map<String, Object> main = (Map<String, Object>) firstEntry.get("main");
-        List<Map<String, Object>> weatherList = (List<Map<String, Object>>) firstEntry.get("weather");
-
-        double temperature = main != null ? (double) main.get("temp") : 0;
-        int humidity = main != null ? (int) main.get("humidity") : 0;
-        String description = !weatherList.isEmpty() ? (String) weatherList.get(0).get("description") : "";
-        boolean isRaining = description.toLowerCase().contains("rain");
-
-        return Map.of(
-                "temperature", temperature,
-                "humidity", humidity,
-                "description", description,
-                "isRaining", isRaining
-        );
-
-}}
+        return forecasts;
+    }
+}
