@@ -1,3 +1,4 @@
+com\agrowise\WeatherForecast\config\AppConfig.class
 com\agrowise\WeatherForecast\service\WeatherForecastService.class
 com\agrowise\WeatherForecast\controller\WeatherForecastController.class
 com\agrowise\WeatherForecast\model\WeatherForecast.class

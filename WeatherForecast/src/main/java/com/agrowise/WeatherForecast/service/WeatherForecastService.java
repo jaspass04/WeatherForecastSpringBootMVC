@@ -8,12 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service layer responsible for fetching and parsing weather data from the external API.
+ */
 @Service
 public class WeatherForecastService {
 
@@ -25,7 +26,6 @@ public class WeatherForecastService {
             "Sparti", 253394
     );
 
-    // API key moved to application.properties
     @Value("${weather.api.key}")
     private String apiKey;
 
@@ -38,45 +38,76 @@ public class WeatherForecastService {
         this.restTemplate = restTemplate;
     }
 
-    // Method to fetch weather data for a city
+    /**
+     * Fetches weather data for the given city name.
+     *
+     * @param city the name of the city.
+     * @return a list of WeatherForecast objects parsed from the API response.
+     */
     public List<WeatherForecast> getWeatherData(String city) {
         int cityId = getCityId(city);
         String url = buildUrl(cityId);
-
         String response = restTemplate.getForObject(url, String.class);
         return parseWeatherData(response);
     }
 
-    // Method to validate if the city exists
+    /**
+     * Checks if the given city is valid (present in the predefined city map).
+     *
+     * @param city the name of the city.
+     * @return true if the city is valid; false otherwise.
+     */
     public boolean isCityValid(String city) {
         return CITY_ID_MAP.containsKey(city);
     }
 
-    // Simplified this method since it's just returning the keys of CITY_ID_MAP
+    /**
+     * Returns a list of all supported cities.
+     *
+     * @return an immutable list of city names.
+     */
     public List<String> getCities() {
         return List.copyOf(CITY_ID_MAP.keySet());
     }
 
-    // Extract city id lookup to a method
+    /**
+     * Retrieves the city ID for the given city name.
+     *
+     * @param city the name of the city.
+     * @return the corresponding city ID, or -1 if not found.
+     */
     private int getCityId(String city) {
         return CITY_ID_MAP.getOrDefault(city, -1);
     }
 
-    // Build the API URL dynamically using UriComponentsBuilder
+    /**
+     * Dynamically builds the API URL using the city ID and query parameters.
+     *
+     * @param cityId the ID of the city.
+     * @return the complete URL for the API call.
+     */
     private String buildUrl(int cityId) {
         return UriComponentsBuilder.fromHttpUrl(apiUrl)
                 .queryParam("id", cityId)
                 .queryParam("appid", apiKey)
                 .queryParam("units", "metric")  // Celsius
-                .queryParam("cnt", "5")  // Get 5 days forecast
+                .queryParam("cnt", "5")           // 5 forecast entries
                 .toUriString();
     }
 
-    // Parse the weather data from the response
+    /**
+     * Parses the weather API response into a list of WeatherForecast objects.
+     * <p>
+     * The method extracts temperature, humidity, weather description, rain status, and converts
+     * the UNIX timestamp from the response into a LocalDate.
+     * </p>
+     *
+     * @param response the JSON response from the weather API.
+     * @return a list of parsed WeatherForecast objects.
+     */
     private List<WeatherForecast> parseWeatherData(String response) {
         JSONObject jsonResponse = new JSONObject(response);
         JSONArray forecastList = jsonResponse.getJSONArray("list");
-
         List<WeatherForecast> forecasts = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
@@ -87,6 +118,8 @@ public class WeatherForecastService {
             String description = weatherArray.getJSONObject(0).getString("description");
             boolean isRaining = description.contains("rain");
 
+
+            // Create WeatherForecast object
             forecasts.add(new WeatherForecast(dayTemp, humidity, description, isRaining));
         }
 

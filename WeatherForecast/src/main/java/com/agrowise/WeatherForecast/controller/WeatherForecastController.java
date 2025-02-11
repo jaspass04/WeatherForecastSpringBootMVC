@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller that handles weather forecast-related requests.
+ * It delegates business logic to the WeatherForecastService.
+ */
 @Controller
 @RequestMapping("/agro")
 public class WeatherForecastController {
@@ -20,6 +24,12 @@ public class WeatherForecastController {
         this.weatherService = weatherService;
     }
 
+    /**
+     * Displays the weather page with a dropdown of available cities.
+     *
+     * @param model the model used to pass data to the view.
+     * @return the name of the Thymeleaf template (weatherPage).
+     */
     @GetMapping("/weather")
     public String showWeatherPage(Model model) {
         List<String> cities = weatherService.getCities();  // Fetch cities from the service
@@ -28,15 +38,22 @@ public class WeatherForecastController {
         return "weatherPage";
     }
 
+    /**
+     * Processes the form submission by validating the selected city and fetching weather data.
+     *
+     * @param location the city selected by the user.
+     * @param model    the model used to pass data to the view.
+     * @return the name of the Thymeleaf template (weatherPage).
+     */
     @PostMapping("/weather")
     public String getWeather(@RequestParam("location") String location, Model model) {
-        List<String> cities = weatherService.getCities(); // Fetch cities again from the service
+        List<String> cities = weatherService.getCities(); // Fetch cities from the service
         model.addAttribute("cities", cities);
 
-        // Add the selected city to the model
+        // Save the user's selection to pre-select it in the dropdown
         model.addAttribute("selectedCity", location);
 
-        if (weatherService.isCityValid(location)) {  // Validate city
+        if (weatherService.isCityValid(location)) {  // Validate the selected city
             List<WeatherForecast> forecastList = weatherService.getWeatherData(location);
             model.addAttribute("forecastList", forecastList);
         } else {

@@ -99,7 +99,9 @@
             <form method="POST" action="/agro/weather">
                 <label for="location">Select a city:</label>
                 <select id="location" name="location">
+
                     <th:block th:each="city : ${cities}">
+
                         <option th:value="${city}" th:text="${city}"
                                 th:selected="${city == selectedCity}"></option>
                     </th:block>
